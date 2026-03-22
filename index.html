@@ -1,18 +1,895 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>GitHub Lab</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GoRunners Prototype</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --primary: #111827;
+      --soft: #eef2ff;
+      --accent: #ecfeff;
+      --success: #dcfce7;
+      --shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.9);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .header-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 0;
+      flex-wrap: wrap;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    .brand p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .nav-btn, .primary-btn, .ghost-btn, .small-btn {
+      border-radius: 999px;
+      transition: 0.2s ease;
+    }
+
+    .nav-btn {
+      padding: 10px 16px;
+      background: white;
+      border: 1px solid var(--line);
+    }
+
+    .nav-btn.active, .primary-btn {
+      background: var(--primary);
+      color: white;
+    }
+
+    .primary-btn {
+      padding: 12px 18px;
+    }
+
+    .ghost-btn {
+      padding: 12px 18px;
+      background: white;
+      border: 1px solid var(--line);
+      color: var(--text);
+    }
+
+    .small-btn {
+      padding: 9px 14px;
+      background: var(--primary);
+      color: white;
+    }
+
+    main {
+      padding: 28px 0 48px;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .grid-hero {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 22px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    .hero-card {
+      padding: 34px;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: #4338ca;
+      font-weight: 600;
+      font-size: 14px;
+      width: fit-content;
+    }
+
+    .hero-card h2 {
+      font-size: clamp(34px, 5vw, 54px);
+      line-height: 1.05;
+      margin: 18px 0 0;
+      max-width: 760px;
+    }
+
+    .hero-card p {
+      color: var(--muted);
+      font-size: 18px;
+      max-width: 700px;
+      margin-top: 16px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 26px;
+    }
+
+    .stats-grid, .badge-grid, .event-grid, .two-col, .three-col {
+      display: grid;
+      gap: 18px;
+    }
+
+    .badge-grid { grid-template-columns: repeat(3, 1fr); }
+    .event-grid { grid-template-columns: repeat(3, 1fr); margin-top: 22px; }
+    .two-col { grid-template-columns: 1.05fr 0.95fr; }
+    .three-col { grid-template-columns: repeat(3, 1fr); }
+
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 24px;
+    }
+
+    .muted { color: var(--muted); }
+
+    .progress-wrap {
+      margin-top: 10px;
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #111827, #374151);
+      transition: width 0.25s ease;
+    }
+
+    .mini-card, .event-card, .list-card, .checkpoint, .organizer-row {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: white;
+    }
+
+    .mini-card {
+      padding: 16px;
+      text-align: center;
+      background: #f8fafc;
+    }
+
+    .tag-row, .meta, .event-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .tag.outline {
+      background: white;
+      border: 1px solid var(--line);
+      font-weight: 500;
+    }
+
+    .event-card, .list-card {
+      padding: 18px;
+    }
+
+    .event-card h3, .list-card h3 { margin: 10px 0 8px; }
+    .event-card p, .list-card p { color: var(--muted); }
+
+    .search {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      font: inherit;
+      outline: none;
+    }
+
+    .list-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .list-card.active {
+      outline: 2px solid var(--primary);
+    }
+
+    .detail-hero {
+      background: linear-gradient(135deg, #111827, #334155);
+      color: white;
+      border-radius: 22px;
+      padding: 22px;
+    }
+
+    .checkpoint-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .checkpoint {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: #f8fafc;
+    }
+
+    .checkpoint-index {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      background: white;
+      color: var(--muted);
+      border: 1px solid var(--line);
+    }
+
+    .checkpoint.done .checkpoint-index {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    select, textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      font: inherit;
+      background: white;
+    }
+
+    .recommend {
+      background: #f8fafc;
+      border-radius: 20px;
+      padding: 18px;
+    }
+
+    .joined-list, .attendance-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .joined-item, .organizer-row {
+      padding: 16px;
+    }
+
+    .reward-strong {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 20px;
+      background: #f8fafc;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .organizer-tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .organizer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .checkin-btn.checked {
+      background: #16a34a;
+      color: white;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.48);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 50;
+    }
+
+    .modal.show { display: flex; }
+
+    .modal-card {
+      width: min(520px, 100%);
+      background: white;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-actions {
+      margin-top: 18px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 980px) {
+      .grid-hero, .two-col, .event-grid, .badge-grid, .three-col {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-<h1>Hello GitHub Lab</h1>
-<p>This is my first Git experiment.</p>
-<p>I am learning version control.</p>
+  <header>
+    <div class="container header-inner">
+      <div class="brand">
+        <h1>GoRunners</h1>
+        <p>Run together, feel connected, play the route.</p>
+      </div>
+      <nav>
+        <button class="nav-btn active" data-page="home">Home</button>
+        <button class="nav-btn" data-page="explore">Explore</button>
+        <button class="nav-btn" data-page="match">Match Me</button>
+        <button class="nav-btn" data-page="myrun">My Run</button>
+        <button class="nav-btn" data-page="organizer">Organizer</button>
+      </nav>
+    </div>
+  </header>
 
-<h2>Features</h2>
-<ul>
-    <li>Track changes</li>
-    <li>Create branches</li>
-    <li>Push to GitHub</li>
-</ul>
+  <main class="container">
+    <section id="home" class="page active">
+      <div class="grid-hero">
+        <div class="card hero-card">
+          <div class="pill">✨ Playful running experience for campus and city events</div>
+          <h2>Discover friendly runs, match your pace, and unlock route rewards.</h2>
+          <p>GoRunners helps runners join the right onsite events and helps organizers create engaging group experiences.</p>
+          <div class="actions">
+            <button class="primary-btn" data-jump="explore">Explore events</button>
+            <button class="ghost-btn" data-jump="match">Find my match</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="section-title">Your progress</h3>
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+            <span class="muted">Community points</span>
+            <strong><span id="pointsText">40</span>/100</strong>
+          </div>
+          <div class="progress-wrap"><div id="pointsBar" class="progress-bar"></div></div>
+          <div class="badge-grid" style="margin-top:18px;">
+            <div class="mini-card"><strong>First Finish</strong><div class="muted">Complete your first event</div></div>
+            <div class="mini-card"><strong>Team Spirit</strong><div class="muted">Join a buddy or group run</div></div>
+            <div class="mini-card"><strong>Explorer</strong><div class="muted">Unlock 3 checkpoints</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:22px;">
+        <h3 class="section-title">Featured events</h3>
+        <div id="featuredEvents" class="event-grid"></div>
+      </div>
+    </section>
+
+    <section id="explore" class="page">
+      <div class="two-col">
+        <div class="list-col">
+          <div class="card">
+            <input id="searchInput" class="search" placeholder="Search by event, location, level, or tag" />
+          </div>
+          <div id="eventList" class="list-col"></div>
+        </div>
+        <div class="card">
+          <h3 id="detailTitle" class="section-title"></h3>
+          <div class="detail-hero">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div>
+                <div style="color:#cbd5e1;font-size:14px;">Event details</div>
+                <div id="detailMeta" style="margin-top:8px;line-height:1.8;"></div>
+              </div>
+              <div>
+                <div style="color:#cbd5e1;font-size:14px;">Playful reward</div>
+                <div style="margin-top:8px;line-height:1.7;">Finish this route to unlock 20 points and a route explorer badge.</div>
+              </div>
+            </div>
+          </div>
+          <p id="detailDescription" class="muted" style="margin-top:16px;"></p>
+          <h4 style="margin:18px 0 0;">Interactive route checkpoints</h4>
+          <div id="checkpointList" class="checkpoint-list"></div>
+          <div class="actions">
+            <button id="joinBtn" class="primary-btn">Join this event</button>
+            <button id="checkpointBtn" class="ghost-btn">Unlock checkpoint</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="match" class="page">
+      <div class="two-col">
+        <div class="card">
+          <h3 class="section-title">Find your best run</h3>
+          <div class="form-group">
+            <label>Experience level</label>
+            <select id="experienceSelect">
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-top:16px;">
+            <label>Preferred pace</label>
+            <select id="paceSelect">
+              <option value="easy">Easy</option>
+              <option value="steady">Steady</option>
+              <option value="fast">Fast</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-top:16px;">
+            <label>Main goal</label>
+            <select id="goalSelect">
+              <option value="social">Social</option>
+              <option value="wellbeing">Wellbeing</option>
+              <option value="challenge">Challenge</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="section-title">Recommended for you</h3>
+          <div id="recommendCard" class="recommend"></div>
+          <div class="three-col" style="margin-top:16px;">
+            <div class="mini-card"><strong>Why this fits</strong><div class="muted">Matches your pace and participation goal.</div></div>
+            <div class="mini-card"><strong>Group feeling</strong><div class="muted">Low-pressure atmosphere with clear checkpoints.</div></div>
+            <div class="mini-card"><strong>Playful bonus</strong><div class="muted">Unlock progress points and social badges.</div></div>
+          </div>
+          <div class="actions">
+            <button id="joinRecommendedBtn" class="primary-btn">Join recommended event</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="myrun" class="page">
+      <div class="two-col">
+        <div class="card">
+          <h3 class="section-title">My joined events</h3>
+          <div id="joinedList" class="joined-list"></div>
+        </div>
+        <div class="card">
+          <h3 class="section-title">My rewards</h3>
+          <div class="reward-strong">
+            <div>
+              <div class="muted">Current streak</div>
+              <div style="font-size:34px;font-weight:800;">3 runs</div>
+            </div>
+            <div style="font-size:42px;">🏆</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+            <span class="muted">Points progress</span>
+            <strong><span id="pointsTextSecondary">40</span>/100</strong>
+          </div>
+          <div class="progress-wrap"><div id="pointsBarSecondary" class="progress-bar"></div></div>
+          <div class="badge-grid" style="margin-top:18px;">
+            <div class="mini-card">First Finish</div>
+            <div class="mini-card">Team Spirit</div>
+            <div class="mini-card">Explorer</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="organizer" class="page">
+      <div class="organizer-tabs">
+        <button class="nav-btn active org-tab" data-tab="overview">Overview</button>
+        <button class="nav-btn org-tab" data-tab="attendance">Attendance</button>
+        <button class="nav-btn org-tab" data-tab="notice">Notice</button>
+      </div>
+
+      <div id="overview" class="tab-panel active">
+        <div class="three-col">
+          <div class="card"><div class="muted">Total events</div><div style="font-size:36px;font-weight:800;margin-top:8px;">3</div></div>
+          <div class="card"><div class="muted">Participants</div><div id="participantCount" style="font-size:36px;font-weight:800;margin-top:8px;">24</div></div>
+          <div class="card"><div class="muted">Check-in rate</div><div style="font-size:36px;font-weight:800;margin-top:8px;">76%</div></div>
+        </div>
+      </div>
+
+      <div id="attendance" class="tab-panel">
+        <div class="card">
+          <h3 class="section-title">Quick attendance board</h3>
+          <div id="attendanceList" class="attendance-list"></div>
+        </div>
+      </div>
+
+      <div id="notice" class="tab-panel">
+        <div class="card">
+          <h3 class="section-title">Organizer notice</h3>
+          <textarea id="noticeInput" rows="4">Stay hydrated. Check-in opens 15 minutes early.</textarea>
+          <div class="mini-card" style="margin-top:14px;text-align:left;">
+            <strong>Preview</strong>
+            <div id="noticePreview" class="muted" style="margin-top:8px;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="joinModal" class="modal">
+    <div class="modal-card">
+      <h3 style="margin-top:0;" id="modalTitle">Join event</h3>
+      <p class="muted">Confirm your place and add this event to your personal running plan.</p>
+      <div id="modalMeta" class="mini-card" style="text-align:left;"></div>
+      <div class="modal-actions">
+        <button id="cancelModal" class="ghost-btn">Cancel</button>
+        <button id="confirmJoin" class="primary-btn">Confirm join</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const events = [
+      {
+        id: 1,
+        title: 'Sunset Campus 5K',
+        date: 'Apr 18',
+        time: '18:30',
+        location: 'South Gate Plaza',
+        distance: '5 km',
+        level: 'Beginner Friendly',
+        tag: 'Social',
+        spots: 12,
+        description: 'A relaxed evening run for students who want to explore campus, meet new people, and enjoy a low-pressure group pace.',
+        checkpoints: ['South Gate', 'Library', 'Lake View', 'Finish Arch']
+      },
+      {
+        id: 2,
+        title: 'Night Rhythm Run',
+        date: 'Apr 20',
+        time: '20:00',
+        location: 'Sports Center',
+        distance: '8 km',
+        level: 'Intermediate',
+        tag: 'Challenge',
+        spots: 8,
+        description: 'A more energetic city-style group run with checkpoint missions and a stronger pace for runners with some experience.',
+        checkpoints: ['Sports Center', 'Bridge', 'Riverside', 'East Loop', 'Finish']
+      },
+      {
+        id: 3,
+        title: 'Buddy Morning Jog',
+        date: 'Apr 22',
+        time: '07:00',
+        location: 'Dorm Courtyard',
+        distance: '3 km',
+        level: 'New Runner',
+        tag: 'Wellbeing',
+        spots: 16,
+        description: 'A short morning jog focused on stress relief, easy conversation, and helping first-time runners feel comfortable.',
+        checkpoints: ['Dorm Courtyard', 'Garden Path', 'Coffee Stop', 'Finish']
+      }
+    ];
+
+    const attendees = [
+      { name: 'Amy', group: 'A' },
+      { name: 'Junhong', group: 'B' },
+      { name: 'Yufeng', group: 'A' },
+      { name: 'Xiaohan', group: 'B' },
+      { name: 'Sunxi', group: 'A' }
+    ];
+
+    const state = {
+      currentPage: 'home',
+      selectedEventId: 1,
+      joinedEventIds: [],
+      points: 40,
+      checkpointsDone: 1,
+      experience: 'beginner',
+      pace: 'easy',
+      goal: 'social',
+      checkedIn: {},
+      pendingJoinId: null,
+      notice: 'Stay hydrated. Check-in opens 15 minutes early.'
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const getSelectedEvent = () => events.find(e => e.id === state.selectedEventId);
+
+    function updateProgress() {
+      $('pointsText').textContent = state.points;
+      $('pointsTextSecondary').textContent = state.points;
+      $('pointsBar').style.width = state.points + '%';
+      $('pointsBarSecondary').style.width = state.points + '%';
+      $('participantCount').textContent = 24 + state.joinedEventIds.length;
+    }
+
+    function renderFeatured() {
+      $('featuredEvents').innerHTML = events.map(event => `
+        <div class="event-card">
+          <div class="tag-row">
+            <span class="tag">${event.tag}</span>
+            <span class="muted">${event.spots} spots left</span>
+          </div>
+          <h3>${event.title}</h3>
+          <div class="meta muted">${event.date} · ${event.time}</div>
+          <div class="meta muted">${event.location}</div>
+          <div class="tag-row" style="margin-top:12px;">
+            <span class="tag outline">${event.distance}</span>
+            <span class="tag outline">${event.level}</span>
+          </div>
+          <div class="event-actions" style="margin-top:16px;">
+            <button class="small-btn" onclick="openEvent(${event.id})">View details</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderEventList() {
+      const q = $('searchInput').value.trim().toLowerCase();
+      const list = events.filter(event =>
+        [event.title, event.location, event.level, event.tag].some(v => v.toLowerCase().includes(q))
+      );
+
+      $('eventList').innerHTML = list.map(event => `
+        <div class="list-card ${event.id === state.selectedEventId ? 'active' : ''}" onclick="selectEvent(${event.id})">
+          <div class="tag-row">
+            <span class="tag">${event.tag}</span>
+            <span class="tag outline">${event.level}</span>
+          </div>
+          <h3>${event.title}</h3>
+          <p>${event.description}</p>
+          <div class="meta muted">${event.date} · ${event.time}</div>
+          <div class="meta muted">${event.location} · ${event.distance}</div>
+        </div>
+      `).join('') || '<div class="card">No matching events found.</div>';
+    }
+
+    function renderDetail() {
+      const event = getSelectedEvent();
+      $('detailTitle').textContent = event.title;
+      $('detailMeta').innerHTML = `${event.date} · ${event.time}<br>${event.location}<br>${event.distance} · ${event.level}`;
+      $('detailDescription').textContent = event.description;
+      $('checkpointList').innerHTML = event.checkpoints.map((point, index) => `
+        <div class="checkpoint ${index < state.checkpointsDone ? 'done' : ''}">
+          <div class="checkpoint-index">${index < state.checkpointsDone ? '✓' : index + 1}</div>
+          <div>${point}</div>
+        </div>
+      `).join('');
+    }
+
+    function getRecommendedEvent() {
+      if (state.experience === 'beginner' || state.goal === 'wellbeing') return events[2];
+      if (state.goal === 'challenge' || state.pace === 'fast') return events[1];
+      return events[0];
+    }
+
+    function renderRecommendation() {
+      const event = getRecommendedEvent();
+      $('recommendCard').innerHTML = `
+        <div class="tag-row">
+          <span class="tag">${event.tag}</span>
+          <span class="tag outline">Best Match</span>
+        </div>
+        <h3 style="margin-bottom:8px;">${event.title}</h3>
+        <p class="muted">${event.description}</p>
+        <div class="meta muted">${event.date} · ${event.time}</div>
+        <div class="meta muted">${event.location}</div>
+        <div class="meta muted">${event.distance} · ${event.level}</div>
+      `;
+    }
+
+    function renderJoined() {
+      if (!state.joinedEventIds.length) {
+        $('joinedList').innerHTML = '<div class="mini-card" style="text-align:left;">You have not joined any events yet. Explore runs or use Match Me to find your first activity.</div>';
+        return;
+      }
+      const joined = events.filter(e => state.joinedEventIds.includes(e.id));
+      $('joinedList').innerHTML = joined.map(event => `
+        <div class="joined-item mini-card" style="text-align:left;">
+          <strong>${event.title}</strong>
+          <div class="muted" style="margin-top:6px;">${event.date} · ${event.time} · ${event.location}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderAttendance() {
+      $('attendanceList').innerHTML = attendees.map(person => `
+        <div class="organizer-row">
+          <div>
+            <strong>${person.name}</strong>
+            <div class="muted">Group ${person.group}</div>
+          </div>
+          <button class="ghost-btn checkin-btn ${state.checkedIn[person.name] ? 'checked' : ''}" onclick="toggleCheckin('${person.name}')">
+            ${state.checkedIn[person.name] ? 'Checked in' : 'Mark check-in'}
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function renderNotice() {
+      $('noticeInput').value = state.notice;
+      $('noticePreview').textContent = state.notice;
+    }
+
+    function renderAll() {
+      updateProgress();
+      renderFeatured();
+      renderEventList();
+      renderDetail();
+      renderRecommendation();
+      renderJoined();
+      renderAttendance();
+      renderNotice();
+    }
+
+    function showPage(page) {
+      state.currentPage = page;
+      document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn[data-page]').forEach(el => el.classList.remove('active'));
+      $(page).classList.add('active');
+      document.querySelector(`.nav-btn[data-page="${page}"]`)?.classList.add('active');
+    }
+
+    function openEvent(id) {
+      state.selectedEventId = id;
+      showPage('explore');
+      renderAll();
+    }
+
+    function selectEvent(id) {
+      state.selectedEventId = id;
+      state.checkpointsDone = 1;
+      renderAll();
+    }
+
+    function openJoinModal(id) {
+      const event = events.find(e => e.id === id);
+      state.pendingJoinId = id;
+      $('modalTitle').textContent = `Join ${event.title}`;
+      $('modalMeta').textContent = `${event.date} · ${event.time} · ${event.location}`;
+      $('joinModal').classList.add('show');
+    }
+
+    function closeJoinModal() {
+      $('joinModal').classList.remove('show');
+    }
+
+    function confirmJoin() {
+      if (!state.joinedEventIds.includes(state.pendingJoinId)) {
+        state.joinedEventIds.push(state.pendingJoinId);
+        state.points = Math.min(100, state.points + 20);
+      }
+      closeJoinModal();
+      showPage('myrun');
+      renderAll();
+    }
+
+    function unlockCheckpoint() {
+      const event = getSelectedEvent();
+      state.checkpointsDone = Math.min(state.checkpointsDone + 1, event.checkpoints.length);
+      state.points = Math.min(100, state.points + 10);
+      renderAll();
+    }
+
+    function toggleCheckin(name) {
+      state.checkedIn[name] = !state.checkedIn[name];
+      renderAttendance();
+    }
+
+    document.querySelectorAll('.nav-btn[data-page]').forEach(btn => {
+      btn.addEventListener('click', () => showPage(btn.dataset.page));
+    });
+
+    document.querySelectorAll('[data-jump]').forEach(btn => {
+      btn.addEventListener('click', () => showPage(btn.dataset.jump));
+    });
+
+    document.querySelectorAll('.org-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.org-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        $(btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    $('searchInput').addEventListener('input', renderEventList);
+    $('joinBtn').addEventListener('click', () => openJoinModal(state.selectedEventId));
+    $('checkpointBtn').addEventListener('click', unlockCheckpoint);
+    $('joinRecommendedBtn').addEventListener('click', () => openJoinModal(getRecommendedEvent().id));
+    $('cancelModal').addEventListener('click', closeJoinModal);
+    $('confirmJoin').addEventListener('click', confirmJoin);
+    $('experienceSelect').addEventListener('change', (e) => { state.experience = e.target.value; renderRecommendation(); });
+    $('paceSelect').addEventListener('change', (e) => { state.pace = e.target.value; renderRecommendation(); });
+    $('goalSelect').addEventListener('change', (e) => { state.goal = e.target.value; renderRecommendation(); });
+    $('noticeInput').addEventListener('input', (e) => { state.notice = e.target.value; renderNotice(); });
+    $('joinModal').addEventListener('click', (e) => { if (e.target.id === 'joinModal') closeJoinModal(); });
+
+    renderAll();
+    showPage('home');
+
+    window.openEvent = openEvent;
+    window.selectEvent = selectEvent;
+    window.toggleCheckin = toggleCheckin;
+  </script>
 </body>
 </html>
